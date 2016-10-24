@@ -1,3 +1,2 @@
 # pythonVision
 Python + OpenCV
-ss
