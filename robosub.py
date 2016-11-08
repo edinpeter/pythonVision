@@ -7,7 +7,7 @@ upper_red0 = np.array([15,255,255])
 
 
 def pixelsToFeet(pixels):
-	return int(19.633 * math.exp(-0.016 * pixels))
+	return int(20.019 * math.exp(-0.015 * pixels))
 	
 def findMostCircularContour(cnts):
 	minContour = cnts[0]
