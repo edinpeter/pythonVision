@@ -5,6 +5,8 @@ import math
 lower_red0 = np.array([0,100,60])
 upper_red0 = np.array([15,255,255])
 
+lower_blazeorange = np.array([7, 204, 204])
+upper_blazeorange = np.array([15, 255,255])
 
 def pixelsToFeet(pixels):
 	return int(20.019 * math.exp(-0.015 * pixels))
@@ -66,3 +68,56 @@ def findColorBuoy(frame, lower, upper, color, overlay):
 		radius = int(radius)
 		cv2.circle(overlay,center,radius,(255,0,200),2)
 		cv2.putText(overlay,color + " " + str(pixelsToFeet(radius)) + "ft",center, 1, 2,(255,255,255), 1,cv2.LINE_AA)
+	return
+
+def getLegHighPoints(boxPts):
+	minY = 1000
+	minX = -1
+	for pair in boxPts:
+		if pair[1] < minY:
+			minY = pair[1]
+			minX = pair[0]
+	return (minX, minY)
+
+def getRotatedRect(contour, overlay):
+	rect = cv2.minAreaRect(contour)
+	box = cv2.boxPoints(rect)
+	box = np.int0(box)
+	cv2.drawContours(overlay,[box],0,(255,255,255),2)
+	return box
+
+def findGate(frame, lower, upper, blazeOrange, overlay):
+	blur = cv2.GaussianBlur(frame,(5,5),0)
+	hsv = cv2.cvtColor(blur, cv2.COLOR_BGR2HSV)
+	
+	mask = cv2.inRange(hsv, lower_blazeorange ,upper_blazeorange)
+	cv2.imshow("mask", mask)
+
+	gray = cv2.bilateralFilter(mask, 11, 17, 17)
+	edged = cv2.Canny(gray, 30, 200)
+	im, contours, hierarchy = cv2.findContours(edged,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+	if len(contours) >= 2:
+		cv2.drawContours(overlay, contours, 0, (0,255,0), 3)
+		cv2.drawContours(overlay, contours, 1, (0,255,0), 3)
+
+		cnt = contours[0]
+		box = getRotatedRect(cnt, overlay)
+    	leg1 = getLegHighPoints(box)
+    	cnt = contours[1]
+    	box = getRotatedRect(cnt, overlay)
+    	leg2 = getLegHighPoints(box)
+
+    	cv2.line(overlay, leg1, leg2, (0,255,255), 2)
+
+	return
+
+
+
+
+
+
+
+
+
+
+
